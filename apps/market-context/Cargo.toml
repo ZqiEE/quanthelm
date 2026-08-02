@@ -1,6 +1,6 @@
 [package]
-name = "quanthelm"
-description = "QuantHelm command-line application"
+name = "quanthelm-market-context"
+description = "Read-only Binance public market context snapshot CLI"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -10,14 +10,9 @@ repository.workspace = true
 [dependencies]
 clap.workspace = true
 qh-binance = { path = "../../crates/qh-binance" }
-qh-config = { path = "../../crates/qh-config" }
 qh-domain = { path = "../../crates/qh-domain" }
-qh-market-data = { path = "../../crates/qh-market-data" }
-qh-storage = { path = "../../crates/qh-storage" }
 serde_json.workspace = true
 tokio.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
 
 [lints]
 workspace = true

@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "apps/market-context",
     "apps/quanthelm",
     "crates/qh-binance",
     "crates/qh-config",
