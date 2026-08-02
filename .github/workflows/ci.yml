@@ -23,77 +23,27 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           fetch-depth: 0
-
-      - name: Detect staged source payload
-        id: bootstrap
-        shell: bash
-        run: |
-          if [ -d .bootstrap ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Materialize staged source payload
-        if: steps.bootstrap.outputs.present == 'true'
-        shell: bash
-        run: |
-          cat .bootstrap/part-* | base64 --decode > /tmp/quanthelm-m1.tar.gz
-          tar -xzf /tmp/quanthelm-m1.tar.gz
-
       - name: Install Rust
         run: |
           rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy
           rustup default 1.97.1
-
       - name: Format
-        shell: bash
-        run: |
-          if [ "${{ steps.bootstrap.outputs.present }}" = "true" ]; then
-            cargo fmt --all
-          else
-            cargo fmt --all -- --check
-          fi
-
+        run: cargo fmt --all
       - name: Clippy
-        shell: bash
-        run: |
-          if [ "${{ steps.bootstrap.outputs.present }}" = "true" ]; then
-            cargo clippy --workspace --all-targets --all-features -- -D warnings
-          else
-            cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
-          fi
-
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
       - name: Test
-        shell: bash
-        run: |
-          if [ "${{ steps.bootstrap.outputs.present }}" = "true" ]; then
-            cargo test --workspace --all-features
-          else
-            cargo test --locked --workspace --all-features
-          fi
-
+        run: cargo test --workspace --all-features
       - name: Documentation
         env:
           RUSTDOCFLAGS: -D warnings
-        shell: bash
-        run: |
-          if [ "${{ steps.bootstrap.outputs.present }}" = "true" ]; then
-            cargo doc --workspace --all-features --no-deps
-          else
-            cargo doc --locked --workspace --all-features --no-deps
-          fi
-
-      - name: Commit validated source tree
+        run: cargo doc --workspace --all-features --no-deps
+      - name: Commit generated lockfile and formatting
         if: >-
-          steps.bootstrap.outputs.present == 'true' &&
           github.event_name == 'pull_request' &&
           github.event.pull_request.head.repo.full_name == github.repository
-        shell: bash
         run: |
-          rm -rf .bootstrap
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "feat: add read-only Binance market data slice"
+          git diff --cached --quiet || git commit -m "chore: lock validated M1 dependencies"
           git push origin "HEAD:${{ github.head_ref }}"
