@@ -9,14 +9,17 @@ use std::{
 use chrono::{DateTime, Utc};
 use clap::Parser;
 use qh_binance::{
-    BinancePublicClient, KlineStreamItem, KlineStreamSupervisor, MAINNET_REST_BASE,
-    StreamLifecycle,
+    BinancePublicClient, KlineStreamItem, KlineStreamSupervisor, MAINNET_REST_BASE, StreamLifecycle,
 };
 use qh_domain::Symbol;
 use qh_market_data::{Continuity, GapDetector, Interval, Kline, RawEvent};
 use qh_storage::JsonlStore;
 use serde::Serialize;
-use tokio::{fs, sync::{mpsc, watch}, time};
+use tokio::{
+    fs,
+    sync::{mpsc, watch},
+    time,
+};
 use tracing::{info, warn};
 use tracing_subscriber::EnvFilter;
 use uuid::Uuid;
@@ -239,7 +242,9 @@ async fn ingest_with_backfill(
             warn!(symbol = %candle.symbol, open_time = %candle.open_time, "ignored duplicate candle");
             Ok(IngestOutcome::Duplicate)
         }
-        Continuity::OutOfOrder { latest_open_time, .. } => {
+        Continuity::OutOfOrder {
+            latest_open_time, ..
+        } => {
             warn!(symbol = %candle.symbol, open_time = %candle.open_time, %latest_open_time, "ignored out-of-order candle");
             Ok(IngestOutcome::OutOfOrder)
         }
