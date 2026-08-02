@@ -1,6 +1,6 @@
 # Market-data integrity
 
-QuantHelm M1 begins with public, read-only Binance USDⓈ-M data. No API key, account endpoint, or order endpoint is present in this slice.
+QuantHelm M1 uses public, read-only Binance USDⓈ-M data. No API key, account endpoint, or order endpoint exists in this layer.
 
 ## Supported REST endpoints
 
@@ -10,46 +10,67 @@ QuantHelm M1 begins with public, read-only Binance USDⓈ-M data. No API key, ac
 
 The adapter keeps Binance-specific response models inside `qh-binance` and emits exchange-neutral `qh-market-data` types.
 
-## Current WebSocket routing roots
+## WebSocket routing
 
-The adapter exposes URL builders for Binance's classified USDⓈ-M WebSocket architecture:
+Kline streams use Binance's classified regular-market endpoint:
 
-- high-frequency public data: `wss://fstream.binance.com/public`
-- regular market data: `wss://fstream.binance.com/market`
+- `wss://fstream.binance.com/market/stream?streams=<stream-1>/<stream-2>`
 
-This slice does not open WebSocket connections yet. The next slice will add supervised connection rotation, reconnect backoff, duplicate handling, and REST gap backfill.
+The supervisor:
+
+- accepts one or more symbol/interval pairs;
+- lowercases stream names only at the Binance boundary;
+- rotates the session after 23 hours and 50 minutes;
+- answers server ping frames with a pong carrying the same payload;
+- reconnects with deterministic exponential backoff from one to 60 seconds;
+- emits lifecycle transitions without treating a reconnect as data continuity;
+- preserves every accepted text frame as a `RawEvent` with SHA-256;
+- emits a normalized candle only when Binance marks `x=true`.
+
+## Gap recovery
+
+`GapDetector` tracks the latest accepted candle per `(symbol, interval)`.
+
+When a newer candle proves that one or more candles are missing:
+
+1. the detector does **not** advance its accepted state;
+2. the REST client requests the half-open missing range;
+3. pagination is limited to Binance's 1,500-candle page size;
+4. every returned open time must match the next expected open time exactly;
+5. the recovered candles are persisted and accepted in sequence;
+6. only then is the newer WebSocket candle accepted.
+
+An empty page, an unaligned range, a non-progressing page, or any timestamp mismatch is a hard error. The system never labels an unproven stream complete.
 
 ## Integrity rules
 
-1. Exact raw exchange metadata is stored with a SHA-256 hash.
+1. Exact raw exchange metadata and WebSocket text frames carry SHA-256 hashes.
 2. Unknown exchange filters are retained by name rather than silently ignored.
 3. Price and quantity normalization is derived from current `exchangeInfo`.
 4. Kline intervals are limited to the MVP set: `15m`, `1h`, and `4h`.
 5. Every persisted candle can be replayed in deterministic file order.
 6. Missing, duplicate, and out-of-order candles are reported explicitly.
-7. Failure to prove continuity must never be represented as a complete stream.
+7. Duplicate and out-of-order candles never advance continuity state.
+8. Failure to prove continuity must never be represented as a complete stream.
 
 ## CLI examples
 
 ```bash
-cargo run --locked -p quanthelm -- binance exchange-info --symbol BTCUSDT
-
-cargo run --locked -p quanthelm -- binance download-klines \
+cargo run --locked -p quanthelm -- binance watch-klines \
   --symbol BTCUSDT \
+  --symbol ETHUSDT \
   --interval 15m \
-  --limit 500 \
-  --output data/btcusdt-15m.jsonl
+  --output-directory data/live-15m
 
 cargo run --locked -p quanthelm -- replay \
-  --input data/btcusdt-15m.jsonl
+  --input data/live-15m/closed-klines.jsonl
 ```
 
-## Next slice
+The output directory contains:
 
-- supervised `/public` and `/market` WebSocket connections;
-- proactive connection rotation;
-- ping/pong and backoff;
-- raw WebSocket event persistence;
-- closed-kline normalization;
-- automatic REST backfill after a detected gap;
-- deterministic reconnect and out-of-order fixtures.
+- `raw.jsonl`: exact accepted text frames with receive time and payload hash;
+- `closed-klines.jsonl`: accepted closed candles, including REST-recovered candles.
+
+## Operational acceptance
+
+The code-level M1 implementation is complete only after the [seven-day soak test](SOAK_TEST.md) proves stable reconnect, rotation, persistence, and continuity behavior under a real public market-data session.
