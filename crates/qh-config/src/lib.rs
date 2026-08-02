@@ -204,12 +204,15 @@ mod tests {
 
     #[test]
     fn credentials_are_redacted() {
+        const API_KEY: &str = "TOP_SECRET_API_KEY_VALUE";
+        const API_SECRET: &str = "TOP_SECRET_API_SECRET_VALUE";
         let credentials = ApiCredentials {
-            api_key: SecretString::new("key"),
-            api_secret: SecretString::new("secret"),
+            api_key: SecretString::new(API_KEY),
+            api_secret: SecretString::new(API_SECRET),
         };
         let rendered = format!("{credentials:?}");
-        assert!(!rendered.contains("key"));
-        assert!(!rendered.contains("secret"));
+        assert!(!rendered.contains(API_KEY));
+        assert!(!rendered.contains(API_SECRET));
+        assert!(rendered.contains("[REDACTED]"));
     }
 }
