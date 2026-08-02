@@ -1,72 +1,74 @@
 # QuantHelm / 量舵
 
-[![CI](https://github.com/ZqiEE/quanthelm/actions/workflows/ci.yml/badge.svg)](https://github.com/ZqiEE/quanthelm/actions/workflows/ci.yml)
-
-**AI-native Binance quantitative trading system with a deterministic Rust risk and execution core.**
+AI-native Binance quantitative trading system with a deterministic Rust risk and execution core.
 
 > 让 AI 研究市场，让 Rust 掌控风险。
 
-QuantHelm is being built for independent quantitative research and disciplined execution on Binance USDⓈ-M perpetual futures. AI may propose experiments and explain results; it never owns exchange credentials, risk limits, or order execution.
-
 ## Status
 
-**Pre-alpha. Not ready for live trading.** The current milestone establishes the engineering, domain, security, and risk baseline.
+QuantHelm is under active development and is **not ready for live trading**.
 
-## MVP scope
+Current milestone: **M1 read-only Binance market data**.
 
-- Binance USDⓈ-M perpetual futures
-- 15m, 1h, and 4h research horizons
-- Versioned market data and deterministic replay
-- Event-driven backtesting
-- Portfolio-level position sizing
-- Independent risk gate
-- Testnet execution and reconciliation
-- AI research assistant with structured, non-trading tools
+Implemented:
 
-## Non-goals
+- Rust 2024 workspace pinned to Rust 1.97.1
+- decimal trading-domain types
+- fail-closed risk gate
+- read-only Binance USDⓈ-M public REST client
+- typed `exchangeInfo` parsing with unknown-filter retention
+- 15m, 1h, and 4h Kline normalization
+- gap, duplicate, and out-of-order detection
+- append-only JSONL storage and deterministic replay
+- read-only CI, dependency auditing, and security guidance
 
-- Profit guarantees or signal selling
-- AI-controlled order placement
-- Automatic leverage increases
-- High-frequency market making
-- Copy trading, custody, or withdrawals
-- Unreviewed strategy changes in production
+Not implemented:
 
-## Workspace
-
-```text
-apps/quanthelm     CLI entry point
-crates/qh-domain   strongly typed trading domain
-crates/qh-config   validated configuration and redacted credentials
-crates/qh-exchange exchange abstraction
-crates/qh-risk     deterministic risk gate
-docs/              product, architecture, risk, roadmap, and ADRs
-```
+- API credentials
+- private account streams
+- order placement or cancellation
+- live strategies
+- AI execution authority
 
 ## Quick start
 
 ```bash
-cargo run -p quanthelm -- status
-cargo test --workspace
+cargo run --locked -p quanthelm -- status
+
+cargo run --locked -p quanthelm -- binance exchange-info --symbol BTCUSDT
+
+cargo run --locked -p quanthelm -- binance download-klines \
+  --symbol BTCUSDT \
+  --interval 15m \
+  --limit 500 \
+  --output data/btcusdt-15m.jsonl
+
+cargo run --locked -p quanthelm -- replay \
+  --input data/btcusdt-15m.jsonl
 ```
 
-Live credentials are not required and should not be configured at this stage.
+## Architecture
 
-## Design rule
+```text
+AI research (advisory only)
+            ↓ typed proposals
+market data → strategy → portfolio → risk gate → execution
+     ↑                                       ↓
+replay/store                           exchange adapter
+```
 
-> No trustworthy data, recovery, reconciliation, and risk gate means no live trading.
+AI cannot place orders, alter hard risk limits, approve live strategies, or access API secrets.
 
 ## Documentation
 
-- [Product specification](docs/PRODUCT.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Product scope](docs/PRODUCT.md)
+- [Market-data integrity](docs/MARKET_DATA.md)
 - [Risk policy](docs/RISK_POLICY.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Security policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
-- [Security](SECURITY.md)
 
-## Disclaimer
+## Safety
 
-This software is provided for research and engineering purposes. It is not investment advice and does not guarantee profitability. Derivatives and leveraged trading can cause substantial losses. Confirm that Binance services are legally available in your jurisdiction before any use.
-
-Licensed under either [Apache-2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT), at your option.
+QuantHelm does not provide investment advice or guarantee returns. Derivatives and leverage can cause substantial losses. Do not enable withdrawal permissions on an exchange API key. Use Testnet and dry-run modes before considering live execution.

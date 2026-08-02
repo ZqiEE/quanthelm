@@ -1,0 +1,22 @@
+[package]
+name = "qh-binance"
+description = "Read-only Binance USD-M Futures public market-data adapter"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+chrono.workspace = true
+qh-domain = { path = "../qh-domain" }
+qh-market-data = { path = "../qh-market-data" }
+reqwest.workspace = true
+rust_decimal.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+[lints]
+workspace = true
