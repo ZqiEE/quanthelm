@@ -8,7 +8,7 @@ AI-native Binance quantitative trading system with a deterministic Rust risk and
 
 QuantHelm is under active development and is **not ready for live trading**.
 
-Current milestone: **M1 read-only Binance market data**.
+Current milestone: **M1 supervised, read-only Binance market data**.
 
 Implemented:
 
@@ -18,6 +18,10 @@ Implemented:
 - read-only Binance USDⓈ-M public REST client
 - typed `exchangeInfo` parsing with unknown-filter retention
 - 15m, 1h, and 4h Kline normalization
+- supervised `/market` WebSocket Kline streams
+- proactive session rotation, ping/pong, and bounded reconnect backoff
+- closed-candle filtering with raw-frame SHA-256 audit records
+- automatic REST pagination to recover missing closed candles
 - gap, duplicate, and out-of-order detection
 - append-only JSONL storage and deterministic replay
 - read-only CI, dependency auditing, and security guidance
@@ -43,9 +47,17 @@ cargo run --locked -p quanthelm -- binance download-klines \
   --limit 500 \
   --output data/btcusdt-15m.jsonl
 
+cargo run --locked -p quanthelm -- binance watch-klines \
+  --symbol BTCUSDT \
+  --symbol ETHUSDT \
+  --interval 15m \
+  --output-directory data/live-15m
+
 cargo run --locked -p quanthelm -- replay \
-  --input data/btcusdt-15m.jsonl
+  --input data/live-15m/closed-klines.jsonl
 ```
+
+`watch-klines` is read-only. It persists exact WebSocket text frames to `raw.jsonl`, persists accepted closed candles to `closed-klines.jsonl`, and uses REST to fill a proven candle gap before accepting the newer candle.
 
 ## Architecture
 
@@ -64,6 +76,7 @@ AI cannot place orders, alter hard risk limits, approve live strategies, or acce
 - [Architecture](docs/ARCHITECTURE.md)
 - [Product scope](docs/PRODUCT.md)
 - [Market-data integrity](docs/MARKET_DATA.md)
+- [M1 soak test](docs/SOAK_TEST.md)
 - [Risk policy](docs/RISK_POLICY.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Security policy](SECURITY.md)

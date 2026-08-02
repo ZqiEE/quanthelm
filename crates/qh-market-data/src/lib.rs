@@ -207,6 +207,12 @@ pub struct GapDetector {
 }
 
 impl GapDetector {
+    /// Returns the latest accepted open time for a symbol and interval.
+    #[must_use]
+    pub fn latest_open_time(&self, symbol: &Symbol, interval: Interval) -> Option<DateTime<Utc>> {
+        self.latest.get(&(symbol.clone(), interval)).copied()
+    }
+
     /// Observes a candle and classifies its ordering.
     pub fn observe(&mut self, kline: &Kline) -> Continuity {
         let key = (kline.symbol.clone(), kline.interval);
@@ -226,9 +232,9 @@ impl GapDetector {
         }
 
         let expected = previous + kline.interval.duration();
-        self.latest.insert(key, kline.open_time);
 
         if kline.open_time == expected {
+            self.latest.insert(key, kline.open_time);
             Continuity::Continuous
         } else if kline.open_time > expected {
             let missing =
@@ -312,6 +318,25 @@ mod tests {
     }
 
     #[test]
+    fn gap_detector_requires_missing_candles_before_advancing() {
+        let mut detector = GapDetector::default();
+        let interval = Interval::M15.milliseconds();
+        assert_eq!(detector.observe(&candle(0)), Continuity::First);
+        assert!(matches!(
+            detector.observe(&candle(interval * 2)),
+            Continuity::Gap {
+                missing_candles: 1,
+                ..
+            }
+        ));
+        assert_eq!(detector.observe(&candle(interval)), Continuity::Continuous);
+        assert_eq!(
+            detector.observe(&candle(interval * 2)),
+            Continuity::Continuous
+        );
+    }
+
+    #[test]
     fn gap_detector_does_not_advance_on_old_data() {
         let mut detector = GapDetector::default();
         let interval = Interval::M15.milliseconds();
@@ -321,8 +346,15 @@ mod tests {
             Continuity::OutOfOrder { .. }
         ));
         assert_eq!(
-            detector.observe(&candle(interval * 2)),
-            Continuity::Continuous
+            detector.latest_open_time(
+                &Symbol::new("BTCUSDT").expect("valid symbol"),
+                Interval::M15,
+            ),
+            Some(
+                Utc.timestamp_millis_opt(interval)
+                    .single()
+                    .expect("valid timestamp")
+            )
         );
     }
 }
