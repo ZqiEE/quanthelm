@@ -5,6 +5,8 @@ use qh_config::AppConfig;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
+type AppError = Box<dyn std::error::Error + Send + Sync>;
+
 #[derive(Debug, Parser)]
 #[command(
     name = "quanthelm",
@@ -24,7 +26,7 @@ enum Command {
     ValidateConfig,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), AppError> {
     let cli = Cli::parse();
     let config = AppConfig::from_env()?;
     init_tracing(&config.log_filter)?;
@@ -45,7 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn init_tracing(filter: &str) -> Result<(), Box<dyn std::error::Error>> {
+fn init_tracing(filter: &str) -> Result<(), AppError> {
     let filter = EnvFilter::try_new(filter)?;
     tracing_subscriber::fmt()
         .with_env_filter(filter)
