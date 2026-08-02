@@ -78,8 +78,7 @@ impl RiskConfig {
                 "max_daily_loss_fraction must be in (0, 1)",
             ));
         }
-        if self.max_drawdown_fraction <= Decimal::ZERO
-            || self.max_drawdown_fraction >= Decimal::ONE
+        if self.max_drawdown_fraction <= Decimal::ZERO || self.max_drawdown_fraction >= Decimal::ONE
         {
             return Err(ConfigError::InvalidRiskLimit(
                 "max_drawdown_fraction must be in (0, 1)",
@@ -119,14 +118,8 @@ impl AppConfig {
         let log_filter = env::var("QUANTHELM_LOG").unwrap_or_else(|_| "info".to_owned());
         let risk = RiskConfig {
             max_gross_leverage: decimal_env("QUANTHELM_MAX_GROSS_LEVERAGE", "2.0")?,
-            max_daily_loss_fraction: decimal_env(
-                "QUANTHELM_MAX_DAILY_LOSS_FRACTION",
-                "0.02",
-            )?,
-            max_drawdown_fraction: decimal_env(
-                "QUANTHELM_MAX_DRAWDOWN_FRACTION",
-                "0.08",
-            )?,
+            max_daily_loss_fraction: decimal_env("QUANTHELM_MAX_DAILY_LOSS_FRACTION", "0.02")?,
+            max_drawdown_fraction: decimal_env("QUANTHELM_MAX_DRAWDOWN_FRACTION", "0.08")?,
         };
         risk.validate()?;
         Ok(Self {

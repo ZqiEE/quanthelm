@@ -140,8 +140,7 @@ impl RiskGate {
         }
 
         if opens_exposure
-            && context.account.daily_pnl_fraction
-                <= -self.limits.max_daily_loss_fraction
+            && context.account.daily_pnl_fraction <= -self.limits.max_daily_loss_fraction
         {
             return rejected(
                 intent.id,
@@ -150,8 +149,7 @@ impl RiskGate {
             );
         }
 
-        if opens_exposure
-            && context.account.drawdown_fraction >= self.limits.max_drawdown_fraction
+        if opens_exposure && context.account.drawdown_fraction >= self.limits.max_drawdown_fraction
         {
             return rejected(
                 intent.id,
@@ -191,9 +189,7 @@ fn rejected(intent_id: IntentId, code: RiskCode, reason: String) -> RiskDecision
 #[cfg(test)]
 mod tests {
     use chrono::Utc;
-    use qh_domain::{
-        IntentId, OrderStyle, PositionEffect, Quantity, Side, StrategyId, Symbol,
-    };
+    use qh_domain::{IntentId, OrderStyle, PositionEffect, Quantity, Side, StrategyId, Symbol};
 
     use super::*;
 

@@ -6,7 +6,11 @@ use tracing::info;
 use tracing_subscriber::EnvFilter;
 
 #[derive(Debug, Parser)]
-#[command(name = "quanthelm", version, about = "AI-native quantitative trading system")]
+#[command(
+    name = "quanthelm",
+    version,
+    about = "AI-native quantitative trading system"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -43,6 +47,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn init_tracing(filter: &str) -> Result<(), Box<dyn std::error::Error>> {
     let filter = EnvFilter::try_new(filter)?;
-    tracing_subscriber::fmt().with_env_filter(filter).try_init()?;
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .try_init()?;
     Ok(())
 }
