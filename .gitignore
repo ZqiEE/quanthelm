@@ -1,0 +1,12 @@
+/target
+/.idea
+/.vscode
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+*.parquet
+*.log
+.DS_Store

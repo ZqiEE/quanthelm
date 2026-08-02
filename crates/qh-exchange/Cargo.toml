@@ -1,0 +1,19 @@
+[package]
+name = "qh-exchange"
+description = "Exchange-neutral execution boundary for QuantHelm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+chrono.workspace = true
+qh-domain = { path = "../qh-domain" }
+rust_decimal.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true
