@@ -1,26 +1,12 @@
 //! QuantHelm command-line entry point.
 
-use std::{
-    error::Error,
-    io,
-    path::PathBuf,
-    str::FromStr,
-};
+use std::{error::Error, io, path::PathBuf, str::FromStr};
 
 use clap::{Parser, Subcommand};
-use qh_binance::{
-    BinancePublicClient,
-    KlineRequest,
-    MAINNET_REST_BASE,
-};
+use qh_binance::{BinancePublicClient, KlineRequest, MAINNET_REST_BASE};
 use qh_config::AppConfig;
 use qh_domain::Symbol;
-use qh_market_data::{
-    Continuity,
-    GapDetector,
-    Interval,
-    Kline,
-};
+use qh_market_data::{Continuity, GapDetector, Interval, Kline};
 use qh_storage::JsonlStore;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
@@ -137,10 +123,7 @@ async fn run_binance(command: BinanceCommand) -> Result<(), AppError> {
             } else {
                 println!("Server time: {}", info.server_time);
                 println!("Contracts: {}", info.contracts.len());
-                println!(
-                    "Trading perpetuals: {}",
-                    info.trading_perpetuals().count()
-                );
+                println!("Trading perpetuals: {}", info.trading_perpetuals().count());
                 println!("Raw SHA-256: {}", info.raw_event.payload_sha256);
             }
         }
@@ -205,7 +188,11 @@ async fn replay(input: PathBuf) -> Result<(), AppError> {
         }
     }
 
-    println!("Replayed {} candles from {}", candles.len(), input.display());
+    println!(
+        "Replayed {} candles from {}",
+        candles.len(),
+        input.display()
+    );
     println!("First or continuous: {continuous}");
     println!("Gaps: {gaps}");
     println!("Duplicates: {duplicates}");

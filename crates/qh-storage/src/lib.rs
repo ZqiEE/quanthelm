@@ -1,13 +1,8 @@
 //! Append-only JSONL persistence used for audit and deterministic replay.
 
-use std::{
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
-use serde::{
-    Serialize,
-    de::DeserializeOwned,
-};
+use serde::{Serialize, de::DeserializeOwned};
 use thiserror::Error;
 use tokio::{
     fs::{self, OpenOptions},

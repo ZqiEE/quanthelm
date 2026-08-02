@@ -1,8 +1,5 @@
 use rust_decimal::Decimal;
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 
 use crate::BinanceError;
 

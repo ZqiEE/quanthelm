@@ -1,18 +1,9 @@
 use chrono::{DateTime, Utc};
 use qh_domain::Symbol;
-use qh_market_data::{
-    Interval,
-    RawEvent,
-};
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use qh_market_data::{Interval, RawEvent};
+use serde::{Deserialize, Serialize};
 
-use crate::{
-    BinanceError,
-    SymbolRules,
-};
+use crate::{BinanceError, SymbolRules};
 
 /// Contract classification.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -101,8 +92,7 @@ impl ExchangeInfo {
     /// Returns trading perpetual contracts.
     pub fn trading_perpetuals(&self) -> impl Iterator<Item = &ContractSpec> {
         self.contracts.iter().filter(|item| {
-            item.contract_type == ContractType::Perpetual
-                && item.status == ContractStatus::Trading
+            item.contract_type == ContractType::Perpetual && item.status == ContractStatus::Trading
         })
     }
 }

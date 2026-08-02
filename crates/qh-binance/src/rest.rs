@@ -5,13 +5,7 @@ use qh_market_data::Kline;
 use reqwest::Client;
 use tracing::debug;
 
-use crate::{
-    BinanceError,
-    ExchangeInfo,
-    KlineRequest,
-    parse_exchange_info,
-    parse_klines,
-};
+use crate::{BinanceError, ExchangeInfo, KlineRequest, parse_exchange_info, parse_klines};
 
 /// Binance USDⓈ-M production REST endpoint.
 pub const MAINNET_REST_BASE: &str = "https://fapi.binance.com";

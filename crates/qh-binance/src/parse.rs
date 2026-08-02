@@ -2,24 +2,14 @@ use std::str::FromStr;
 
 use chrono::{DateTime, Utc};
 use qh_domain::{Price, Symbol};
-use qh_market_data::{
-    Interval,
-    Kline,
-    RawEvent,
-};
+use qh_market_data::{Interval, Kline, RawEvent};
 use rust_decimal::Decimal;
 use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{
-    BinanceError,
-    ContractSpec,
-    ContractType,
-    ExchangeInfo,
-    LotSizeFilter,
-    PercentPriceFilter,
-    PriceFilter,
-    SymbolRules,
+    BinanceError, ContractSpec, ContractType, ExchangeInfo, LotSizeFilter, PercentPriceFilter,
+    PriceFilter, SymbolRules,
 };
 
 /// Parses an exact `/fapi/v1/exchangeInfo` payload.
@@ -60,9 +50,7 @@ pub fn parse_klines(
         .map_err(|error| BinanceError::InvalidResponse(error.to_string()))?;
     rows.into_iter()
         .enumerate()
-        .map(|(index, row)| {
-            parse_kline_row(index, &row, symbol.clone(), interval, observed_at)
-        })
+        .map(|(index, row)| parse_kline_row(index, &row, symbol.clone(), interval, observed_at))
         .collect()
 }
 
@@ -105,9 +93,7 @@ fn parse_filters(filters: Vec<Value>) -> Result<SymbolRules, BinanceError> {
         let filter_type = filter
             .get("filterType")
             .and_then(Value::as_str)
-            .ok_or_else(|| {
-                BinanceError::InvalidResponse("filter missing filterType".to_owned())
-            })?;
+            .ok_or_else(|| BinanceError::InvalidResponse("filter missing filterType".to_owned()))?;
         match filter_type {
             "PRICE_FILTER" => {
                 rules.price = Some(PriceFilter {
@@ -146,12 +132,14 @@ fn parse_filters(filters: Vec<Value>) -> Result<SymbolRules, BinanceError> {
                     Some(decimal_field(&filter, "notional", "MIN_NOTIONAL.notional")?);
             }
             "MAX_NUM_ORDERS" => {
-                rules.max_orders =
-                    Some(integer_field(&filter, "limit", "MAX_NUM_ORDERS.limit")?);
+                rules.max_orders = Some(integer_field(&filter, "limit", "MAX_NUM_ORDERS.limit")?);
             }
             "MAX_NUM_ALGO_ORDERS" => {
-                rules.max_algo_orders =
-                    Some(integer_field(&filter, "limit", "MAX_NUM_ALGO_ORDERS.limit")?);
+                rules.max_algo_orders = Some(integer_field(
+                    &filter,
+                    "limit",
+                    "MAX_NUM_ALGO_ORDERS.limit",
+                )?);
             }
             other => rules.unknown_filters.push(other.to_owned()),
         }
@@ -201,11 +189,7 @@ fn parse_kline_row(
     })
 }
 
-fn decimal_field(
-    value: &Value,
-    key: &str,
-    field: &'static str,
-) -> Result<Decimal, BinanceError> {
+fn decimal_field(value: &Value, key: &str, field: &'static str) -> Result<Decimal, BinanceError> {
     let raw = value
         .get(key)
         .and_then(Value::as_str)
@@ -224,8 +208,7 @@ where
         .get(key)
         .and_then(Value::as_u64)
         .ok_or_else(|| BinanceError::InvalidResponse(format!("{field} is missing")))?;
-    T::try_from(raw)
-        .map_err(|_| BinanceError::InvalidResponse(format!("{field} is out of range")))
+    T::try_from(raw).map_err(|_| BinanceError::InvalidResponse(format!("{field} is out of range")))
 }
 
 fn decimal_value(value: &Value, field: &'static str) -> Result<Decimal, BinanceError> {
@@ -245,8 +228,7 @@ where
     let raw = value
         .as_i64()
         .ok_or_else(|| BinanceError::InvalidResponse(format!("{field} must be an integer")))?;
-    T::try_from(raw)
-        .map_err(|_| BinanceError::InvalidResponse(format!("{field} is out of range")))
+    T::try_from(raw).map_err(|_| BinanceError::InvalidResponse(format!("{field} is out of range")))
 }
 
 #[cfg(test)]

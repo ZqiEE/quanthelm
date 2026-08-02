@@ -1,10 +1,6 @@
 //! Exchange-neutral market-data events, hashes, and continuity checks.
 
-use std::{
-    collections::HashMap,
-    fmt,
-    str::FromStr,
-};
+use std::{collections::HashMap, fmt, str::FromStr};
 
 use chrono::{DateTime, Duration, Utc};
 use qh_domain::{DomainError, Price, Symbol};
@@ -235,8 +231,8 @@ impl GapDetector {
         if kline.open_time == expected {
             Continuity::Continuous
         } else if kline.open_time > expected {
-            let missing = (kline.open_time - expected).num_milliseconds()
-                / kline.interval.milliseconds();
+            let missing =
+                (kline.open_time - expected).num_milliseconds() / kline.interval.milliseconds();
             Continuity::Gap {
                 expected_open_time: expected,
                 actual_open_time: kline.open_time,
