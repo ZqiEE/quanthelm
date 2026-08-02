@@ -23,6 +23,7 @@ Implemented:
 - proactive session rotation, ping/pong, and bounded reconnect backoff
 - closed-candle filtering with raw-frame SHA-256 audit records
 - automatic REST pagination to recover missing closed candles
+- stable collector instance UUIDs and structured lifecycle/integrity metrics
 - gap, duplicate, and out-of-order detection
 - append-only JSONL storage and deterministic replay
 - read-only CI, dependency auditing, and security guidance
@@ -52,7 +53,7 @@ cargo run --locked -p quanthelm -- binance download-klines \
   --limit 500 \
   --output data/btcusdt-15m.jsonl
 
-cargo run --locked -p quanthelm -- binance watch-klines \
+cargo run --release --locked -p quanthelm-collector -- \
   --symbol BTCUSDT \
   --symbol ETHUSDT \
   --interval 15m \
@@ -64,7 +65,11 @@ cargo run --locked -p quanthelm -- replay \
 
 `quanthelm-market-context` concurrently fetches a credential-free snapshot for one exact symbol. Every endpoint response must return the requested symbol, otherwise the command fails explicitly.
 
-`watch-klines` is read-only. It persists exact WebSocket text frames to `raw.jsonl`, persists accepted closed candles to `closed-klines.jsonl`, and uses REST to fill a proven candle gap before accepting the newer candle.
+`quanthelm-collector` is read-only. It writes:
+
+- `raw.jsonl`: exact WebSocket text events wrapped with a stable collector instance UUID;
+- `closed-klines.jsonl`: accepted closed candles, including proven REST recovery;
+- `metrics.json`: an atomically replaced snapshot of lifecycle, integrity, and recovery counters.
 
 ## Architecture
 
