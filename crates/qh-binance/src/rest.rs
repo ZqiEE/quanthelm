@@ -129,7 +129,7 @@ impl BinancePublicClient {
                         candle.open_time
                     )));
                 }
-                cursor = cursor + interval.duration();
+                cursor += interval.duration();
                 recovered.push(candle);
             }
             if cursor == previous_cursor {
