@@ -268,10 +268,7 @@ pub(crate) fn parse_rolling_ticker_24h(
     Ok(RollingTicker24h {
         symbol: Symbol::new(raw.symbol)?,
         price_change: decimal(&raw.price_change, "ticker24h.priceChange")?,
-        price_change_percent: decimal(
-            &raw.price_change_percent,
-            "ticker24h.priceChangePercent",
-        )?,
+        price_change_percent: decimal(&raw.price_change_percent, "ticker24h.priceChangePercent")?,
         weighted_average_price: required_price(
             &raw.weighted_avg_price,
             "ticker24h.weightedAvgPrice",
@@ -294,8 +291,7 @@ fn decode<T>(payload: &str) -> Result<T, BinanceError>
 where
     T: for<'de> Deserialize<'de>,
 {
-    serde_json::from_str(payload)
-        .map_err(|error| BinanceError::InvalidResponse(error.to_string()))
+    serde_json::from_str(payload).map_err(|error| BinanceError::InvalidResponse(error.to_string()))
 }
 
 fn decimal(raw: &str, field: &'static str) -> Result<Decimal, BinanceError> {

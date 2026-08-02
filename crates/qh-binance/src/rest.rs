@@ -7,24 +7,13 @@ use reqwest::Client;
 use tracing::debug;
 
 use crate::{
+    BinanceError, BookTickerSnapshot, ExchangeInfo, FundingRateRecord, KlineRequest,
+    MarkPriceSnapshot, MarketContextSnapshot, OpenInterestSnapshot, RollingTicker24h,
     context::{
-        parse_book_ticker,
-        parse_funding_rates,
-        parse_mark_price,
-        parse_open_interest,
+        parse_book_ticker, parse_funding_rates, parse_mark_price, parse_open_interest,
         parse_rolling_ticker_24h,
     },
-    parse_exchange_info,
-    parse_klines,
-    BinanceError,
-    BookTickerSnapshot,
-    ExchangeInfo,
-    FundingRateRecord,
-    KlineRequest,
-    MarkPriceSnapshot,
-    MarketContextSnapshot,
-    OpenInterestSnapshot,
-    RollingTicker24h,
+    parse_exchange_info, parse_klines,
 };
 
 /// Binance USDⓈ-M production REST endpoint.
@@ -69,10 +58,7 @@ impl BinancePublicClient {
     }
 
     /// Fetches the current mark price and funding state for one contract.
-    pub async fn mark_price(
-        &self,
-        symbol: &Symbol,
-    ) -> Result<MarkPriceSnapshot, BinanceError> {
+    pub async fn mark_price(&self, symbol: &Symbol) -> Result<MarkPriceSnapshot, BinanceError> {
         let received_at = Utc::now();
         let query = [("symbol".to_owned(), symbol.to_string())];
         let payload = self.get_text("/fapi/v1/premiumIndex", &query).await?;
@@ -82,15 +68,10 @@ impl BinancePublicClient {
     }
 
     /// Fetches the current best bid and ask for one contract.
-    pub async fn book_ticker(
-        &self,
-        symbol: &Symbol,
-    ) -> Result<BookTickerSnapshot, BinanceError> {
+    pub async fn book_ticker(&self, symbol: &Symbol) -> Result<BookTickerSnapshot, BinanceError> {
         let received_at = Utc::now();
         let query = [("symbol".to_owned(), symbol.to_string())];
-        let payload = self
-            .get_text("/fapi/v1/ticker/bookTicker", &query)
-            .await?;
+        let payload = self.get_text("/fapi/v1/ticker/bookTicker", &query).await?;
         let snapshot = parse_book_ticker(&payload, received_at)?;
         ensure_symbol(symbol, &snapshot.symbol, "bookTicker")?;
         Ok(snapshot)
@@ -151,14 +132,13 @@ impl BinancePublicClient {
         symbol: &Symbol,
         funding_limit: u16,
     ) -> Result<MarketContextSnapshot, BinanceError> {
-        let (mark_price, book_ticker, open_interest, rolling_24h, recent_funding) =
-            tokio::try_join!(
-                self.mark_price(symbol),
-                self.book_ticker(symbol),
-                self.open_interest(symbol),
-                self.rolling_ticker_24h(symbol),
-                self.funding_rates(symbol, funding_limit),
-            )?;
+        let (mark_price, book_ticker, open_interest, rolling_24h, recent_funding) = tokio::try_join!(
+            self.mark_price(symbol),
+            self.book_ticker(symbol),
+            self.open_interest(symbol),
+            self.rolling_ticker_24h(symbol),
+            self.funding_rates(symbol, funding_limit),
+        )?;
         Ok(MarketContextSnapshot {
             symbol: symbol.clone(),
             mark_price,
@@ -203,22 +183,18 @@ impl BinancePublicClient {
         start_open_time: DateTime<Utc>,
         end_open_time_exclusive: DateTime<Utc>,
     ) -> Result<Vec<Kline>, BinanceError> {
-        let expected = backfill_candle_count(
-            start_open_time,
-            end_open_time_exclusive,
-            interval,
-        )?;
+        let expected = backfill_candle_count(start_open_time, end_open_time_exclusive, interval)?;
         let mut cursor = start_open_time;
         let mut recovered = Vec::with_capacity(expected);
 
         while cursor < end_open_time_exclusive {
             let remaining = usize::try_from(
-                (end_open_time_exclusive - cursor).num_milliseconds()
-                    / interval.milliseconds(),
+                (end_open_time_exclusive - cursor).num_milliseconds() / interval.milliseconds(),
             )
             .map_err(|_| BinanceError::InvalidRequest("backfill range is too large".to_owned()))?;
-            let limit = u16::try_from(remaining.min(1_500))
-                .map_err(|_| BinanceError::InvalidRequest("invalid backfill page size".to_owned()))?;
+            let limit = u16::try_from(remaining.min(1_500)).map_err(|_| {
+                BinanceError::InvalidRequest("invalid backfill page size".to_owned())
+            })?;
             let request = KlineRequest {
                 symbol: symbol.clone(),
                 interval,
@@ -348,8 +324,7 @@ mod tests {
             .single()
             .expect("valid time");
         assert_eq!(
-            backfill_candle_count(start, aligned, Interval::M15)
-                .expect("aligned range"),
+            backfill_candle_count(start, aligned, Interval::M15).expect("aligned range"),
             2
         );
 

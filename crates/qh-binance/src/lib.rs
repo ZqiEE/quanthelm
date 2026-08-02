@@ -12,12 +12,8 @@ mod stream;
 mod websocket;
 
 pub use context::{
-    BookTickerSnapshot,
-    FundingRateRecord,
-    MarkPriceSnapshot,
-    MarketContextSnapshot,
-    OpenInterestSnapshot,
-    RollingTicker24h,
+    BookTickerSnapshot, FundingRateRecord, MarkPriceSnapshot, MarketContextSnapshot,
+    OpenInterestSnapshot, RollingTicker24h,
 };
 pub use error::BinanceError;
 pub use filters::{LotSizeFilter, PercentPriceFilter, PriceFilter, SymbolRules};
