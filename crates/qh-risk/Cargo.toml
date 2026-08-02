@@ -1,0 +1,18 @@
+[package]
+name = "qh-risk"
+description = "Deterministic risk gate for QuantHelm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+chrono.workspace = true
+qh-config = { path = "../qh-config" }
+qh-domain = { path = "../qh-domain" }
+rust_decimal.workspace = true
+serde.workspace = true
+
+[lints]
+workspace = true
