@@ -8,13 +8,11 @@ use rust_decimal::Decimal;
 use serde_json::Value;
 use tokio::{
     sync::{mpsc, watch},
-    time::{sleep, Instant},
+    time::{Instant, sleep},
 };
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 
-use crate::{
-    combined_stream_url, BinanceError, WebSocketCategory,
-};
+use crate::{BinanceError, WebSocketCategory, combined_stream_url};
 
 /// Rotate before Binance's documented 24-hour connection limit.
 pub const DEFAULT_MAX_SESSION_AGE: Duration = Duration::from_secs(23 * 60 * 60 + 50 * 60);
@@ -151,7 +149,12 @@ impl KlineStreamSupervisor {
             if *shutdown.borrow() {
                 return Ok(());
             }
-            if !send_item(&output, KlineStreamItem::Lifecycle(StreamLifecycle::Connecting)).await {
+            if !send_item(
+                &output,
+                KlineStreamItem::Lifecycle(StreamLifecycle::Connecting),
+            )
+            .await
+            {
                 return Ok(());
             }
 
@@ -384,9 +387,9 @@ fn bool_field(value: &Value, key: &str, field: &str) -> Result<bool, BinanceErro
 
 fn decimal_field(value: &Value, key: &str, field: &str) -> Result<Decimal, BinanceError> {
     let raw = text_field(value, key, field)?;
-    raw.parse().map_err(|_| BinanceError::InvalidResponse(format!(
-        "{field} contains invalid decimal text"
-    )))
+    raw.parse().map_err(|_| {
+        BinanceError::InvalidResponse(format!("{field} contains invalid decimal text"))
+    })
 }
 
 #[cfg(test)]

@@ -1,10 +1,6 @@
 //! Exchange-neutral market-data events, hashes, and continuity checks.
 
-use std::{
-    collections::HashMap,
-    fmt,
-    str::FromStr,
-};
+use std::{collections::HashMap, fmt, str::FromStr};
 
 use chrono::{DateTime, Duration, Utc};
 use qh_domain::{DomainError, Price, Symbol};
@@ -213,11 +209,7 @@ pub struct GapDetector {
 impl GapDetector {
     /// Returns the latest accepted open time for a symbol and interval.
     #[must_use]
-    pub fn latest_open_time(
-        &self,
-        symbol: &Symbol,
-        interval: Interval,
-    ) -> Option<DateTime<Utc>> {
+    pub fn latest_open_time(&self, symbol: &Symbol, interval: Interval) -> Option<DateTime<Utc>> {
         self.latest.get(&(symbol.clone(), interval)).copied()
     }
 
@@ -245,8 +237,8 @@ impl GapDetector {
             self.latest.insert(key, kline.open_time);
             Continuity::Continuous
         } else if kline.open_time > expected {
-            let missing = (kline.open_time - expected).num_milliseconds()
-                / kline.interval.milliseconds();
+            let missing =
+                (kline.open_time - expected).num_milliseconds() / kline.interval.milliseconds();
             Continuity::Gap {
                 expected_open_time: expected,
                 actual_open_time: kline.open_time,

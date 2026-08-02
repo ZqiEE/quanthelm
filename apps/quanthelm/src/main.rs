@@ -1,19 +1,10 @@
 //! QuantHelm command-line entry point.
 
-use std::{
-    error::Error,
-    io,
-    path::PathBuf,
-    str::FromStr,
-};
+use std::{error::Error, io, path::PathBuf, str::FromStr};
 
 use clap::{Parser, Subcommand};
 use qh_binance::{
-    BinancePublicClient,
-    KlineRequest,
-    KlineStreamItem,
-    KlineStreamSupervisor,
-    MAINNET_REST_BASE,
+    BinancePublicClient, KlineRequest, KlineStreamItem, KlineStreamSupervisor, MAINNET_REST_BASE,
     StreamLifecycle,
 };
 use qh_config::AppConfig;
@@ -151,10 +142,7 @@ async fn run_binance(command: BinanceCommand) -> Result<(), AppError> {
             } else {
                 println!("Server time: {}", info.server_time);
                 println!("Contracts: {}", info.contracts.len());
-                println!(
-                    "Trading perpetuals: {}",
-                    info.trading_perpetuals().count()
-                );
+                println!("Trading perpetuals: {}", info.trading_perpetuals().count());
                 println!("Raw SHA-256: {}", info.raw_event.payload_sha256);
             }
         }
@@ -280,7 +268,9 @@ async fn ingest_with_backfill(
         Continuity::Duplicate => {
             warn!(symbol = %candle.symbol, open_time = %candle.open_time, "ignored duplicate closed candle");
         }
-        Continuity::OutOfOrder { latest_open_time, .. } => {
+        Continuity::OutOfOrder {
+            latest_open_time, ..
+        } => {
             warn!(symbol = %candle.symbol, open_time = %candle.open_time, %latest_open_time, "ignored out-of-order closed candle");
         }
         Continuity::Gap {
@@ -362,7 +352,11 @@ async fn replay(input: PathBuf) -> Result<(), AppError> {
         }
     }
 
-    println!("Replayed {} candles from {}", candles.len(), input.display());
+    println!(
+        "Replayed {} candles from {}",
+        candles.len(),
+        input.display()
+    );
     println!("First or continuous: {continuous}");
     println!("Gaps: {gaps}");
     println!("Duplicates: {duplicates}");

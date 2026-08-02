@@ -6,13 +6,7 @@ use qh_market_data::{Interval, Kline};
 use reqwest::Client;
 use tracing::debug;
 
-use crate::{
-    BinanceError,
-    ExchangeInfo,
-    KlineRequest,
-    parse_exchange_info,
-    parse_klines,
-};
+use crate::{BinanceError, ExchangeInfo, KlineRequest, parse_exchange_info, parse_klines};
 
 /// Binance USDⓈ-M production REST endpoint.
 pub const MAINNET_REST_BASE: &str = "https://fapi.binance.com";
@@ -88,22 +82,18 @@ impl BinancePublicClient {
         start_open_time: DateTime<Utc>,
         end_open_time_exclusive: DateTime<Utc>,
     ) -> Result<Vec<Kline>, BinanceError> {
-        let expected = backfill_candle_count(
-            start_open_time,
-            end_open_time_exclusive,
-            interval,
-        )?;
+        let expected = backfill_candle_count(start_open_time, end_open_time_exclusive, interval)?;
         let mut cursor = start_open_time;
         let mut recovered = Vec::with_capacity(expected);
 
         while cursor < end_open_time_exclusive {
             let remaining = usize::try_from(
-                (end_open_time_exclusive - cursor).num_milliseconds()
-                    / interval.milliseconds(),
+                (end_open_time_exclusive - cursor).num_milliseconds() / interval.milliseconds(),
             )
             .map_err(|_| BinanceError::InvalidRequest("backfill range is too large".to_owned()))?;
-            let limit = u16::try_from(remaining.min(1_500))
-                .map_err(|_| BinanceError::InvalidRequest("invalid backfill page size".to_owned()))?;
+            let limit = u16::try_from(remaining.min(1_500)).map_err(|_| {
+                BinanceError::InvalidRequest("invalid backfill page size".to_owned())
+            })?;
             let request = KlineRequest {
                 symbol: symbol.clone(),
                 interval,
@@ -219,8 +209,7 @@ mod tests {
             .single()
             .expect("valid time");
         assert_eq!(
-            backfill_candle_count(start, aligned, Interval::M15)
-                .expect("aligned range"),
+            backfill_candle_count(start, aligned, Interval::M15).expect("aligned range"),
             2
         );
 
