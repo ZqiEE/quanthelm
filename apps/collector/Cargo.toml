@@ -1,0 +1,25 @@
+[package]
+name = "quanthelm-collector"
+description = "Read-only supervised Binance Kline collector with instance identity and metrics"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+chrono.workspace = true
+clap.workspace = true
+qh-binance = { path = "../../crates/qh-binance" }
+qh-domain = { path = "../../crates/qh-domain" }
+qh-market-data = { path = "../../crates/qh-market-data" }
+qh-storage = { path = "../../crates/qh-storage" }
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+
+[lints]
+workspace = true

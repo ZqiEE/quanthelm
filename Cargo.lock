@@ -1033,6 +1033,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "quanthelm-collector"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "clap",
+ "qh-binance",
+ "qh-domain",
+ "qh-market-data",
+ "qh-storage",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "quanthelm-market-context"
 version = "0.1.0"
 dependencies = [
