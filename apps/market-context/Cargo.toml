@@ -1,0 +1,18 @@
+[package]
+name = "quanthelm-market-context"
+description = "Read-only Binance public market context snapshot CLI"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+clap.workspace = true
+qh-binance = { path = "../../crates/qh-binance" }
+qh-domain = { path = "../../crates/qh-domain" }
+serde_json.workspace = true
+tokio.workspace = true
+
+[lints]
+workspace = true

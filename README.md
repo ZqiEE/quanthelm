@@ -17,6 +17,7 @@ Implemented:
 - fail-closed risk gate
 - read-only Binance USDⓈ-M public REST client
 - typed `exchangeInfo` parsing with unknown-filter retention
+- public market context snapshots: mark/index price, best bid/ask, funding history, open interest, and rolling 24-hour liquidity
 - 15m, 1h, and 4h Kline normalization
 - supervised `/market` WebSocket Kline streams
 - proactive session rotation, ping/pong, and bounded reconnect backoff
@@ -41,6 +42,10 @@ cargo run --locked -p quanthelm -- status
 
 cargo run --locked -p quanthelm -- binance exchange-info --symbol BTCUSDT
 
+cargo run --locked -p quanthelm-market-context -- \
+  --symbol BTCUSDT \
+  --funding-limit 16
+
 cargo run --locked -p quanthelm -- binance download-klines \
   --symbol BTCUSDT \
   --interval 15m \
@@ -56,6 +61,8 @@ cargo run --locked -p quanthelm -- binance watch-klines \
 cargo run --locked -p quanthelm -- replay \
   --input data/live-15m/closed-klines.jsonl
 ```
+
+`quanthelm-market-context` concurrently fetches a credential-free snapshot for one exact symbol. Every endpoint response must return the requested symbol, otherwise the command fails explicitly.
 
 `watch-klines` is read-only. It persists exact WebSocket text frames to `raw.jsonl`, persists accepted closed candles to `closed-klines.jsonl`, and uses REST to fill a proven candle gap before accepting the newer candle.
 
