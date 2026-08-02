@@ -2,6 +2,7 @@
 //!
 //! This crate intentionally contains no API-key, signing, account, or order code.
 
+mod context;
 mod error;
 mod filters;
 mod models;
@@ -10,6 +11,14 @@ mod rest;
 mod stream;
 mod websocket;
 
+pub use context::{
+    BookTickerSnapshot,
+    FundingRateRecord,
+    MarkPriceSnapshot,
+    MarketContextSnapshot,
+    OpenInterestSnapshot,
+    RollingTicker24h,
+};
 pub use error::BinanceError;
 pub use filters::{LotSizeFilter, PercentPriceFilter, PriceFilter, SymbolRules};
 pub use models::{ContractSpec, ContractStatus, ContractType, ExchangeInfo, KlineRequest};
